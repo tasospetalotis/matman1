@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Machine Catalogue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            line-height: 1.6;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .category {
+            margin: 20px 0;
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .category h2 {
+            margin-top: 0;
+        }
+        .delete-category {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+        }
+        .product {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .product img {
+            max-width: 100px;
+            margin-right: 20px;
+            border-radius: 5px;
+            flex: 1 1 100px;
+        }
+        .product-details {
+            flex: 2 1 calc(100% - 120px);
+            min-width: 200px;
+        }
+        .product-details h3 {
+            margin: 0;
+        }
+        .product-details p {
+            margin: 5px 0 0;
+        }
+        .delete-product {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+        }
+        .add-form {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9e9e9;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+        }
+        .add-form input, .add-form button, .add-form textarea {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .login-container {
+            margin: 20px 0;
+        }
+        .login-container input, .login-container button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .placeholder-image {
+            width: 100px;
+            height: 100px;
+            background-color: #ddd;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 100px;
+            color: #666;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            .product {
+                flex-direction: column;
+                text-align: center;
+            }
+            .product img {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            .product-details {
+                flex: 1 1 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Farm Machine Catalogue</h1>
+    </div>
+    <div class="container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for categories, products, or descriptions..." oninput="filterCatalogue()">
+        </div>
+        
+        <!-- Login Form -->
+        <div class="login-container" id="loginContainer">
+            <h3>Admin Login</h3>
+            <input type="password" id="adminCode" placeholder="Enter Admin Code">
+            <button onclick="checkLogin()">Login</button>
+        </div>
+        
+        <!-- Form to add new category (Initially hidden) -->
+        <div class="add-form" id="addCategoryForm">
+            <h3>Add New Category</h3>
+            <input type="text" id="newCategoryName" placeholder="Category Name" required>
+            <button onclick="addCategory()">Add Category</button>
+        </div>
+        
+        <div id="categories">
+            <!-- Existing categories and products go here -->
+        </div>
+    </div>
+    
+    <script>
+        const adminCode = "matman09876";
+        let categories = [];
+
+        function checkLogin() {
+            const inputCode = document.getElementById('adminCode').value;
+            if (inputCode === adminCode) {
+                document.getElementById('addCategoryForm').style.display = 'block';
+                const deleteCategoryButtons = document.querySelectorAll('.delete-category');
+                const deleteProductButtons = document.querySelectorAll('.delete-product');
+                const addForms = document.querySelectorAll('.add-form');
+
+                deleteCategoryButtons.forEach(button => button.style.display = 'block');
+                deleteProductButtons.forEach(button => button.style.display = 'block');
+                addForms.forEach(form => form.style.display = 'block');
+
+                document.getElementById('loginContainer').style.display = 'none';
+            } else {
+                alert('Incorrect code. Access denied.');
+            }
+        }
+
+        function addCategory() {
+            const categoryName = document.getElementById('newCategoryName').value.trim();
+            if (categoryName) {
+                categories.push({ name: categoryName, products: [] });
+                saveCategories();
+                renderCategories();
+                document.getElementById('newCategoryName').value = '';
+            } else {
+                alert('Category name cannot be empty.');
+            }
+        }
+
+        function addProduct(button) {
+            const form = button.parentElement;
+            const categoryIndex = form.dataset.categoryIndex;
+            const productName = form.querySelector('.productName').value.trim();
+            const productImageInput = form.querySelector('.productImage');
+            const productDescription = form.querySelector('.productDescription').value.trim();
+
+            if (productName && productImageInput.files.length > 0 && productDescription) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    categories[categoryIndex].products.push({
+                        name: productName,
+                        image: e.target.result,
+                        description: productDescription
+                    });
+                    saveCategories();
+                    renderCategories();
+                };
+                reader.readAsDataURL(productImageInput.files[0]);
+
+                form.querySelector('.productName').value = '';
+                form.querySelector('.productImage').value = '';
+                form.querySelector('.productDescription').value = '';
+            } else {
+                alert('Please fill in all fields and provide an image.');
+            }
+        }
+
+        function deleteCategory(categoryIndex) {
+            if (confirm('Are you sure you want to delete this category?')) {
+                categories.splice(categoryIndex, 1);
+                saveCategories();
+                renderCategories();
+            }
+        }
+
+        function deleteProduct(categoryIndex, productIndex) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                categories[categoryIndex].products.splice(productIndex, 1);
+                saveCategories();
+                renderCategories();
+            }
+        }
+
+        function saveCategories() {
+            localStorage.setItem('categories', JSON.stringify(categories));
+        }
+
+        function loadCategories() {
+            const savedCategories = localStorage.getItem('categories');
+            if (savedCategories) {
+                categories = JSON.parse(savedCategories);
+            }
+        }
+
+        function renderCategories() {
+            const categoriesDiv = document.getElementById('categories');
+            categoriesDiv.innerHTML = '';
+            categories.forEach((category, categoryIndex) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.classList.add('category');
+                
+                const categoryTitle = document.createElement('h2');
+                categoryTitle.textContent = category.name;
+                
+                const categoryContent = document.createElement('div');
+                categoryContent.classList.add('products');
+                
+                category.products.forEach((product, productIndex) => {
+                    const productDiv = document.createElement('div');
+                    productDiv.classList.add('product');
+                    
+                    productDiv.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1kYXNoYXJlPSIxIiBzdHJva2UtY29sb3I9IjMzMyIgLz48dGV4dCB4PSI1IiB5PSI1IiBmb250LXNpemU9IjE0Ij5Gcm9tIGltYWdlPC90ZXh0Pjwvc3ZnPg=='">
+                        <div class="product-details">
+                            <h3>${product.name}</h3>
+                            <p>${product.description}</p>
+                        </div>
+                        <button class="delete-product" onclick="deleteProduct(${categoryIndex}, ${productIndex})" style="display: ${document.getElementById('loginContainer').style.display === 'none' ? 'block' : 'none'};">Delete Product</button>
+                    `;
+                    
+                    categoryContent.appendChild(productDiv);
+                });
+
+                const addProductForm = document.createElement('div');
+                addProductForm.classList.add('add-form');
+                addProductForm.dataset.categoryIndex = categoryIndex;
+                addProductForm.style.display = (document.getElementById('loginContainer').style.display === 'none') ? 'block' : 'none'; // Show form if logged in
+
+                addProductForm.innerHTML = `
+                    <h3>Add New Product to ${category.name}</h3>
+                    <input type="text" placeholder="Product Name" class="productName" required>
+                    <input type="file" accept="image/*" class="productImage" required>
+                    <textarea placeholder="Product Description" class="productDescription" required></textarea>
+                    <button onclick="addProduct(this)">Add Product</button>
+                `;
+                
+                const deleteCategoryBtn = document.createElement('button');
+                deleteCategoryBtn.textContent = 'Delete Category';
+                deleteCategoryBtn.classList.add('delete-category');
+                deleteCategoryBtn.style.display = (document.getElementById('loginContainer').style.display === 'none') ? 'block' : 'none'; // Show button if logged in
+                deleteCategoryBtn.onclick = () => deleteCategory(categoryIndex);
+
+                categoryDiv.appendChild(categoryTitle);
+                categoryDiv.appendChild(categoryContent);
+                categoryDiv.appendChild(addProductForm);
+                categoryDiv.appendChild(deleteCategoryBtn);
+                
+                categoriesDiv.appendChild(categoryDiv);
+            });
+        }
+
+        function filterCatalogue() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const categoriesDiv = document.getElementById('categories');
+            const categoryDivs = categoriesDiv.querySelectorAll('.category');
+            
+            categoryDivs.forEach(categoryDiv => {
+                const categoryName = categoryDiv.querySelector('h2').textContent.toLowerCase();
+                const productsDivs = categoryDiv.querySelectorAll('.product');
+                
+                // Check if category name or any product matches the search input
+                const isCategoryVisible = categoryName.includes(searchInput);
+                let isCategoryProductVisible = isCategoryVisible;
+                
+                productsDivs.forEach(productDiv => {
+                    const productName = productDiv.querySelector('.product-details h3').textContent.toLowerCase();
+                    const productDescription = productDiv.querySelector('.product-details p').textContent.toLowerCase();
+                    const isProductVisible = productName.includes(searchInput) || productDescription.includes(searchInput);
+                    productDiv.style.display = isProductVisible ? 'flex' : 'none';
+                    if (isProductVisible) {
+                        isCategoryProductVisible = true;
+                    }
+                });
+                
+                categoryDiv.style.display = isCategoryProductVisible ? 'block' : 'none';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategories();
+            renderCategories();
+        });
+    </script>
+</body>
+</html>

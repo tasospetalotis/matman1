@@ -1,0 +1,32 @@
+// data.js
+
+const LOCAL_STORAGE_KEY = 'categories';
+
+export function getCategories() {
+    const savedCategories = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return savedCategories ? JSON.parse(savedCategories) : [];
+}
+
+export function saveCategories(categories) {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(categories));
+}
+
+export function addCategory(categories, category) {
+    categories.push(category);
+    saveCategories(categories);
+}
+
+export function deleteCategory(categories, index) {
+    categories.splice(index, 1);
+    saveCategories(categories);
+}
+
+export function addProduct(categories, categoryIndex, product) {
+    categories[categoryIndex].products.push(product);
+    saveCategories(categories);
+}
+
+export function deleteProduct(categories, categoryIndex, productIndex) {
+    categories[categoryIndex].products.splice(productIndex, 1);
+    saveCategories(categories);
+}
