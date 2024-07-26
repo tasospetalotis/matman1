@@ -1,0 +1,49 @@
+{
+    "categories": [
+        {
+            "name": "Tractors",
+            "products": [
+                {
+                    "name": "John Deere 5020",
+                    "image": "https://example.com/images/john-deere-5020.jpg",
+                    "description": "A powerful tractor for heavy-duty tasks."
+                },
+                {
+                    "name": "Massey Ferguson 6700",
+                    "image": "https://example.com/images/massey-ferguson-6700.jpg",
+                    "description": "Versatile and efficient, perfect for various farm tasks."
+                }
+            ]
+        },
+        {
+            "name": "Harvesters",
+            "products": [
+                {
+                    "name": "Case IH Axial-Flow 5140",
+                    "image": "https://example.com/images/case-ih-5140.jpg",
+                    "description": "High-efficiency harvester with advanced features."
+                },
+                {
+                    "name": "New Holland CR10.90",
+                    "image": "https://example.com/images/new-holland-cr1090.jpg",
+                    "description": "World-class harvesting performance."
+                }
+            ]
+        },
+        {
+            "name": "Plows",
+            "products": [
+                {
+                    "name": "Kverneland Ecomat",
+                    "image": "https://example.com/images/kverneland-ecomat.jpg",
+                    "description": "Eco-friendly plow for sustainable farming."
+                },
+                {
+                    "name": "Lemken Diamant 16",
+                    "image": "https://example.com/images/lemken-diamant16.jpg",
+                    "description": "Robust plow designed for efficient soil turnover."
+                }
+            ]
+        }
+    ]
+}
